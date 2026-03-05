@@ -1,0 +1,54 @@
+node_modules
+dist
+dist.zip
+token.json
+*Zone.Identifier*
+debug.log
+yarn.lock
+logs
+.env
+.env.development
+.env.test
+.env.production
+
+# temp directory
+.temp
+.tmp
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!environments/*/terraform.tfvars.example
+
+# Credenciais e secrets
+*.pem
+*.key
+*.secret
+.env
+*.tfvars.backup
+
+# Lambdas build
+lambdas/*/python/
+lambdas/*/*.zip
+dist/
+
+# IDE e sistema
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Binários de provedores
+*terraform-provider-*.exe
+*terraform-provider-*_x*.exe
+*terraform-provider-*_x*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage
