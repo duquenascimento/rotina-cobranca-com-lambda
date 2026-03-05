@@ -1,0 +1,131 @@
+<mxfile host="app.diagrams.net" modified="2026-03-05T00:00:00.000Z" agent="2.0.0" version="24.0.0" type="device">
+  <diagram name="Arquitetura Cobrança Asaas" id="asaas-lambda-arch">
+    <mxGraphModel dx="1422" dy="746" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Estilo: Títulos de Camadas -->
+        <mxCell id="layer-title-1" value="CAMADA DE AGENDAMENTO" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#2E86AB;" vertex="1" parent="1">
+          <mxGeometry x="50" y="20" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- EventBridge -->
+        <mxCell id="eventbridge" value="&lt;b&gt;Amazon EventBridge&lt;/b&gt;&lt;br&gt;Schedule (Cron)&lt;br&gt;&lt;font color=&quot;#666&quot;&gt;Ex: 0 9 * * ? *&lt;/font&gt;" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;" vertex="1" parent="1">
+          <mxGeometry x="220" y="60" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Setas -->
+        <mxCell id="edge1" value="Dispara diariamente" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontColor=#333;fontSize=11;" edge="1" parent="1" source="eventbridge" target="lambda-orchestrator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CAMADA DE ORQUESTRAÇÃO -->
+        <mxCell id="layer-title-2" value="CAMADA DE ORQUESTRAÇÃO" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#2E86AB;" vertex="1" parent="1">
+          <mxGeometry x="50" y="160" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda Orquestradora -->
+        <mxCell id="lambda-orchestrator" value="&lt;b&gt;Lambda: Orquestradora&lt;/b&gt;&lt;br&gt;• Query clientes a cobrar&lt;br&gt;• Envia msgs para SQS&lt;br&gt;&lt;font color=&quot;#006400&quot;&gt;Timeout: 30s-2min&lt;/font&gt;" style="shape=process;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;" vertex="1" parent="1">
+          <mxGeometry x="200" y="200" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Database -->
+        <mxCell id="database" value="&lt;b&gt;PostgreSQL / DynamoDB&lt;/b&gt;&lt;br&gt;• Clientes&lt;br&gt;• Transações&lt;br&gt;• Idempotência" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="450" y="200" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Conexões Orquestradora -->
+        <mxCell id="edge-orch-db-read" value="Lê pendentes" style="endArrow=classic;html=1;rounded=0;dashed=1;fontColor=#666;fontSize=10;" edge="1" parent="1" source="lambda-orchestrator" target="database">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-orch-sqs" value="Enqueue: {customer_id, valor, ref}" style="endArrow=classic;html=1;rounded=0;fontColor=#333;fontSize=11;" edge="1" parent="1" source="lambda-orchestrator" target="sqs-main">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CAMADA DE FILA -->
+        <mxCell id="layer-title-3" value="CAMADA DE MENSAGERIA" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#2E86AB;" vertex="1" parent="1">
+          <mxGeometry x="50" y="300" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- SQS Principal -->
+        <mxCell id="sqs-main" value="&lt;b&gt;Amazon SQS&lt;/b&gt;&lt;br&gt;Fila: cobranças-pending&lt;br&gt;&lt;font color=&quot;#666&quot;&gt;Visibility: 60s | DLQ: 3 retries&lt;/font&gt;" style="shape=queue;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;" vertex="1" parent="1">
+          <mxGeometry x="220" y="340" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- SQS DLQ -->
+        <mxCell id="sqs-dlq" value="&lt;b&gt;DLQ&lt;/b&gt;&lt;br&gt;cobrancas-dead-letter&lt;br&gt;&lt;font color=&quot;#cc0000&quot;&gt;Alerta CloudWatch&lt;/font&gt;" style="shape=queue;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;" vertex="1" parent="1">
+          <mxGeometry x="220" y="440" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Setas SQS -->
+        <mxCell id="edge-sqs-dlq" value="Falhas após retry" style="endArrow=classic;html=1;rounded=0;fontColor=#cc0000;fontSize=10;dashed=1;" edge="1" parent="1" source="sqs-main" target="sqs-dlq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CAMADA DE PROCESSAMENTO -->
+        <mxCell id="layer-title-4" value="CAMADA DE PROCESSAMENTO" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#2E86AB;" vertex="1" parent="1">
+          <mxGeometry x="50" y="520" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda Worker -->
+        <mxCell id="lambda-worker" value="&lt;b&gt;Lambda: Worker Cobrança&lt;/b&gt;&lt;br&gt;• Batch: 10 msgs&lt;br&gt;• Chama API Asaas&lt;br&gt;• Atualiza DB&lt;br&gt;&lt;font color=&quot;#006400&quot;&gt;Reserved Concurrency: 10&lt;/font&gt;" style="shape=process;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;" vertex="1" parent="1">
+          <mxGeometry x="200" y="560" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Conexões Worker -->
+        <mxCell id="edge-sqs-worker" value="Trigger (Batch)" style="endArrow=classic;html=1;rounded=0;fontColor=#333;fontSize=11;" edge="1" parent="1" source="sqs-main" target="lambda-worker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-worker-db" value="Update status" style="endArrow=classic;html=1;rounded=0;dashed=1;fontColor=#666;fontSize=10;" edge="1" parent="1" source="lambda-worker" target="database">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API Asaas -->
+        <mxCell id="asaas-api" value="&lt;b&gt;API Asaas&lt;/b&gt;&lt;br&gt;POST /payments&lt;br&gt;&lt;font color=&quot;#666&quot;&gt;Rate Limit: respeitar via Concurrency&lt;/font&gt;" style="shape=server;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;" vertex="1" parent="1">
+          <mxGeometry x="500" y="560" width="160" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-worker-asaas" value="Criar cobrança" style="endArrow=classic;html=1;rounded=0;fontColor=#333;fontSize=11;" edge="1" parent="1" source="lambda-worker" target="asaas-api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- WEBHOOK (Assíncrono) -->
+        <mxCell id="layer-title-5" value="CONFIRMAÇÃO ASSÍNCRONA" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#2E86AB;" vertex="1" parent="1">
+          <mxGeometry x="50" y="680" width="250" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda Webhook -->
+        <mxCell id="lambda-webhook" value="&lt;b&gt;Lambda: Webhook Handler&lt;/b&gt;&lt;br&gt;• Recebe status Asaas&lt;br&gt;• Atualiza DB final&lt;br&gt;• Idempotente" style="shape=process;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;" vertex="1" parent="1">
+          <mxGeometry x="200" y="720" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Conexão Webhook -->
+        <mxCell id="edge-asaas-webhook" value="&lt;font color=&quot;#006400&quot;&gt;Webhook:&lt;/font&gt;&lt;br&gt;PAYMENT_RECEIVED" style="endArrow=classic;html=1;rounded=0;fontColor=#006400;fontSize=11;dashed=1;" edge="1" parent="1" source="asaas-api" target="lambda-webhook">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-webhook-db" value="Confirma pagamento" style="endArrow=classic;html=1;rounded=0;dashed=1;fontColor=#666;fontSize=10;" edge="1" parent="1" source="lambda-webhook" target="database">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- LEGENDA / NOTAS TÉCNICAS -->
+        <mxCell id="note-title" value="⚙️ Configurações Importantes" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=#333;" vertex="1" parent="1">
+          <mxGeometry x="700" y="200" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note1" value="• SQS Visibility Timeout &gt; Lambda Timeout&#xa;• Reserved Concurrency na Worker para rate limit&#xa;• Idempotência: checar DB antes de cobrar&#xa;• DLQ com alarme CloudWatch&#xa;• Webhook para confirmação final" style="text;html=1;strokeColor=#666;fillColor=#FFFFCC;align=left;verticalAlign=top;whiteSpace=wrap;rounded=5;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="700" y="240" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Fluxo de erro da Worker para DLQ -->
+        <mxCell id="edge-worker-dlq" value="Erro 4xx / Falha crítica" style="endArrow=classic;html=1;rounded=0;fontColor=#cc0000;fontSize=10;dashed=1;" edge="1" parent="1" source="lambda-worker" target="sqs-dlq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,12 @@
+# Rotina Cobrança com Lambda
+
+## Descrição
+Este projeto implementa uma rotina automatizada de cobrança utilizando AWS Lambda.
+
+## Requisitos
+- AWS Account
+- Python 3.9+
+- AWS CLI configurado
+- Permissões IAM necessárias
+
+## Instalação

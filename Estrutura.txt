@@ -1,0 +1,17 @@
+terraform/
+├── main.tf                 # Providers e backend
+├── variables.tf            # Variáveis de entrada
+├── outputs.tf              # Outputs (URLs, ARNs)
+├── modules/
+│   ├── lambda-worker/      # Módulo reutilizável para Lambda + IAM + Logs
+│   ├── sqs-queue/          # Módulo SQS + DLQ
+│   └── eventbridge-trigger/# Módulo EventBridge + permissões
+├── environments/
+│   ├── dev/
+│   │   ├── terraform.tfvars
+│   │   └── backend.tf
+│   └── prod/
+│       ├── terraform.tfvars
+│       └── backend.tf
+└── scripts/
+    └── register-asaas-webhook.sh  # Script pós-deploy (opcional)
