@@ -33,13 +33,15 @@ terraform-cobranca-asaas/
 │       ├── variables.tf
 │       ├── terraform.tfvars
 │       └── backend.tf
-└── lambdas/
-    ├── orchestrator/
-    │   ├── lambda_function.py
-    │   └── requirements.txt
-    ├── worker/
-    │   ├── lambda_function.py
-    │   └── requirements.txt
-    └── webhook_handler/
-        ├── lambda_function.py
-        └── requirements.txt
+├── lambdas/
+│   ├── orchestrator/
+│   │   ├── lambda_function.py
+│   │   └── requirements.txt
+│   ├── worker/
+│   │   ├── lambda_function.py
+│   │   └── requirements.txt
+│   └── webhook_handler/
+│       ├── lambda_function.py
+│       └── requirements.txt
+└── scripts/
+    └── register-asaas-webhook.sh  # Script pós-deploy (opcional)
