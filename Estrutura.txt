@@ -1,17 +1,45 @@
-terraform/
-├── main.tf                 # Providers e backend
-├── variables.tf            # Variáveis de entrada
-├── outputs.tf              # Outputs (URLs, ARNs)
+terraform-cobranca-asaas/
+├── main.tf
+├── providers.tf
+├── variables.tf
+├── outputs.tf
+├── locals.tf
+├── backend.tf
 ├── modules/
-│   ├── lambda-worker/      # Módulo reutilizável para Lambda + IAM + Logs
-│   ├── sqs-queue/          # Módulo SQS + DLQ
-│   └── eventbridge-trigger/# Módulo EventBridge + permissões
+│   ├── sqs-queue/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── lambda-base/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── eventbridge-trigger/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── api-gateway-webhook/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
 ├── environments/
 │   ├── dev/
+│   │   ├── main.tf
+│   │   ├── variables.tf
 │   │   ├── terraform.tfvars
 │   │   └── backend.tf
 │   └── prod/
+│       ├── main.tf
+│       ├── variables.tf
 │       ├── terraform.tfvars
 │       └── backend.tf
-└── scripts/
-    └── register-asaas-webhook.sh  # Script pós-deploy (opcional)
+└── lambdas/
+    ├── orchestrator/
+    │   ├── lambda_function.py
+    │   └── requirements.txt
+    ├── worker/
+    │   ├── lambda_function.py
+    │   └── requirements.txt
+    └── webhook_handler/
+        ├── lambda_function.py
+        └── requirements.txt
