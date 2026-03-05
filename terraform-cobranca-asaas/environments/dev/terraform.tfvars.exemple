@@ -1,0 +1,10 @@
+# Copie este arquivo para terraform.tfvars e preencha com seus valores
+# NUNCA commit o arquivo terraform.tfvars com credenciais reais
+
+aws_region     = "sa-east-1"
+aws_access_key = "SEU_ACCESS_KEY_AQUI"
+aws_secret_key = "SEU_SECRET_KEY_AQUI"
+project_name   = "cobranca-asaas"
+environment    = "dev"
+
+# ... (copie as demais variáveis como exemplo)

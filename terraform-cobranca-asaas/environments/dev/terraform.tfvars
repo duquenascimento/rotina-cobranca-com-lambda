@@ -2,64 +2,59 @@
 # AWS & Projeto
 # ===========================
 aws_region     = "sa-east-1"
+aws_access_key = "AKIAIOSFODNN7EXAMPLE"
+aws_secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 project_name   = "cobranca-asaas"
-environment    = "prod"
+environment    = "dev"
 
 # ===========================
 # Configurações das Lambdas
 # ===========================
 lambda_runtime                = "python3.11"
-lambda_timeout_orchestrator   = 120
+lambda_timeout_orchestrator   = 180
 lambda_timeout_worker         = 60
 lambda_timeout_webhook        = 30
-lambda_memory_size            = 512
-worker_reserved_concurrency   = 10
+lambda_memory_size            = 256
+worker_reserved_concurrency   = 2
 
 # ===========================
 # SQS & Filas
 # ===========================
+sqs_queue_name             = "cobranca-asaas-dev-pending"
 sqs_visibility_timeout     = 60
 sqs_max_receive_count      = 3
-sqs_message_retention_days = 14
+sqs_message_retention_days = 7
 
 # ===========================
 # EventBridge
 # ===========================
-# Todo dia às 6h BRT (9h UTC) - horário de produção
 eventbridge_schedule = "cron(0 9 * * ? *)"
 eventbridge_timezone = "America/Sao_Paulo"
 
 # ===========================
 # Banco de Dados
 # ===========================
-database_type = "postgresql"
-
-# Preencher com ARN real do Secrets Manager em produção
-database_connection_secret_arn = "arn:aws:secretsmanager:sa-east-1:123456789012:secret:cobranca-asaas-prod/database/connection-xxxxxx"
-
-# ===========================
-# Asaas & Secrets
-# ===========================
-# API de Produção do Asaas
-asaas_api_base_url = "https://www.asaas.com/api/v3"
-
-# Preencher com ARN real do Secrets Manager em produção
-asaas_token_secret_arn = "arn:aws:secretsmanager:sa-east-1:123456789012:secret:cobranca-asaas-prod/asaas/token-xxxxxx"
+database_type     = "postgresql"
+database_host     = "cobranca-dev.xxx.sa-east-1.rds.amazonaws.com"
+database_port     = 5432
+database_name     = "cobranca"
+database_user     = "admin"
+database_password = "senha_dev_aqui"
 
 # ===========================
-# Alertas & Monitoramento
+# Asaas (Sandbox)
 # ===========================
-enable_cloudwatch_alarms = true
-sns_alert_topic_arn      = "arn:aws:sns:sa-east-1:123456789012:cobranca-asaas-prod-alerts"
+asaas_api_base_url = "https://sandbox.asaas.com/api/v3"
+asaas_token        = "$aact_YTU5YTE0M2M2NDQ2NGJiOTY4NDY4N2I5MjQxNjFmODQ6OjAwMDAwMDAwMDAwMDAyMDU3Njg6OiQ"
 
 # ===========================
 # API Gateway Webhook
 # ===========================
 enable_webhook_api     = true
-webhook_api_stage_name = "prod"
+webhook_api_stage_name = "dev"
 
 # ===========================
-# Backend S3
+# Alertas
 # ===========================
-terraform_backend_bucket         = "my-company-tfstate-prod"
-terraform_backend_dynamodb_table = "my-company-tfstate-lock"
+enable_cloudwatch_alarms = false
+sns_alert_topic_arn      = null
