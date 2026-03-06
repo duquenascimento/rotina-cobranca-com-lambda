@@ -1,66 +1,203 @@
-module "cobranca_asaas" {
-  source = "../../"
+# ===========================
+# Módulo SQS
+# ===========================
+module "sqs" {
+  source = "../../modules/sqs-queue"
   
-  # AWS & Projeto
-  aws_region     = var.aws_region
-  aws_access_key = var.aws_access_key
-  aws_secret_key = var.aws_secret_key
-  project_name   = var.project_name
-  environment    = var.environment
-  
-  # Lambdas
-  lambda_runtime                = var.lambda_runtime
-  lambda_timeout_orchestrator   = var.lambda_timeout_orchestrator
-  lambda_timeout_worker         = var.lambda_timeout_worker
-  lambda_timeout_webhook        = var.lambda_timeout_webhook
-  lambda_memory_size            = var.lambda_memory_size
-  worker_reserved_concurrency   = var.worker_reserved_concurrency
-  
-  # SQS
-  sqs_queue_name             = var.sqs_queue_name
-  sqs_visibility_timeout     = var.sqs_visibility_timeout
-  sqs_max_receive_count      = var.sqs_max_receive_count
-  sqs_message_retention_days = var.sqs_message_retention_days
-  
-  # EventBridge
-  eventbridge_schedule = var.eventbridge_schedule
-  eventbridge_timezone = var.eventbridge_timezone
-  
-  # Database
-  database_type     = var.database_type
-  database_host     = var.database_host
-  database_port     = var.database_port
-  database_name     = var.database_name
-  database_user     = var.database_user
-  database_password = var.database_password
-  
-  # Asaas
-  asaas_api_base_url = var.asaas_api_base_url
-  asaas_token        = var.asaas_token
-  
-  # Webhook
-  enable_webhook_api     = var.enable_webhook_api
-  webhook_api_stage_name = var.webhook_api_stage_name
-  
-  # Alertas
-  enable_cloudwatch_alarms = var.enable_cloudwatch_alarms
-  sns_alert_topic_arn      = var.sns_alert_topic_arn
+  queue_name                  = var.sqs_queue_name
+  visibility_timeout_seconds  = var.sqs_visibility_timeout
+  max_receive_count           = var.sqs_max_receive_count
+  message_retention_days      = var.sqs_message_retention_days
+  environment                 = var.environment
+  enable_dlq_alarm            = var.enable_cloudwatch_alarms
+  sns_alert_topic_arn         = var.sns_alert_topic_arn
 }
 
+# ===========================
+# Módulo Lambda Worker
+# ===========================
+module "lambda_worker" {
+  source = "../../modules/lambda-base"
+  
+  function_name        = "${var.project_name}-${var.environment}-worker"
+  filename             = abspath("${path.root}/../../lambdas/worker/lambda_function.zip")
+  handler              = "lambda_function.lambda_handler"
+  runtime              = var.lambda_runtime
+  timeout              = var.lambda_timeout_worker
+  memory_size          = var.lambda_memory_size
+  reserved_concurrency = var.worker_reserved_concurrency
+  environment          = var.environment
+  
+  environment_vars = {
+    ASAAS_API_BASE_URL = var.asaas_api_base_url
+    ASAAS_TOKEN        = var.asaas_token
+    DATABASE_HOST      = var.database_host
+    DATABASE_PORT      = tostring(var.database_port)
+    DATABASE_NAME      = var.database_name
+    DATABASE_USER      = var.database_user
+    DATABASE_PASSWORD  = var.database_password
+    DATABASE_TYPE      = var.database_type
+    LOG_LEVEL          = var.environment == "prod" ? "INFO" : "DEBUG"
+  }
+  
+  sqs_queue_arns = [module.sqs.main_queue_arn]
+  
+  event_source_arn     = module.sqs.main_queue_arn
+  event_source_batch_size = 10
+  event_source_enabled    = true
+  enable_sqs_trigger      = true 
+  
+  
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+# ===========================
+# Módulo Lambda Orquestradora
+# ===========================
+module "lambda_orchestrator" {
+  source = "../../modules/lambda-base"
+  
+  function_name = "${var.project_name}-${var.environment}-orchestrator"
+  filename      = abspath("${path.root}/../../lambdas/orchestrator/lambda_function.zip")
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.lambda_runtime
+  timeout       = var.lambda_timeout_orchestrator
+  memory_size   = var.lambda_memory_size
+  environment   = var.environment
+  
+  environment_vars = {
+    SQS_QUEUE_URL      = module.sqs.main_queue_url
+    DATABASE_HOST      = var.database_host
+    DATABASE_PORT      = tostring(var.database_port)
+    DATABASE_NAME      = var.database_name
+    DATABASE_USER      = var.database_user
+    DATABASE_PASSWORD  = var.database_password
+    DATABASE_TYPE      = var.database_type
+    LOG_LEVEL          = var.environment == "prod" ? "INFO" : "DEBUG"
+  }
+  
+  additional_policy_statements = [
+    {
+      effect    = "Allow"
+      actions   = ["sqs:SendMessage"]
+      resources = [module.sqs.main_queue_arn]
+    }
+  ]
+  
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+# ===========================
+# Módulo EventBridge
+# ===========================
+module "eventbridge" {
+  source = "../../modules/eventbridge-trigger"
+  
+  rule_name            = "${var.project_name}-${var.environment}-daily-trigger"
+  schedule_expression  = var.eventbridge_schedule
+  timezone             = var.eventbridge_timezone
+  target_function_arn  = module.lambda_orchestrator.function_arn
+  target_function_name = "${var.project_name}-${var.environment}-orchestrator"
+  
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+# ===========================
+# Módulo Lambda Webhook
+# ===========================
+module "lambda_webhook" {
+  source = "../../modules/lambda-base"
+  
+  function_name = "${var.project_name}-${var.environment}-webhook-handler"
+  filename      = abspath("${path.root}/../../lambdas/webhook_handler/lambda_function.zip")
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.lambda_runtime
+  timeout       = var.lambda_timeout_webhook
+  memory_size   = var.lambda_memory_size
+  environment   = var.environment
+  
+  environment_vars = {
+    DATABASE_HOST     = var.database_host
+    DATABASE_PORT     = tostring(var.database_port)
+    DATABASE_NAME     = var.database_name
+    DATABASE_USER     = var.database_user
+    DATABASE_PASSWORD = var.database_password
+    DATABASE_TYPE     = var.database_type
+    LOG_LEVEL         = var.environment == "prod" ? "INFO" : "DEBUG"
+  }
+  
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+# ===========================
+# Módulo API Gateway Webhook
+# ===========================
+module "api_gateway_webhook" {
+  source = "../../modules/api-gateway-webhook"
+  
+  enabled              = var.enable_webhook_api
+  api_name             = "${var.project_name}-${var.environment}-webhook-api"
+  stage_name           = var.webhook_api_stage_name
+  webhook_function_arn = module.lambda_webhook.function_arn
+  webhook_function_name = "${var.project_name}-${var.environment}-webhook-handler"
+  
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+# ===========================
 # Outputs
-output "sqs_queue_url" {
-  value = module.cobranca_asaas.sqs_queue_url
+# ===========================
+output "sqs_main_queue_url" {
+  description = "URL da fila principal de cobranças"
+  value       = module.sqs.main_queue_url
 }
 
-output "webhook_url" {
-  value = module.cobranca_asaas.webhook_url
+output "sqs_dlq_arn" {
+  description = "ARN da Dead Letter Queue"
+  value       = module.sqs.dlq_arn
 }
 
-output "asaas_webhook_payload" {
-  value = {
-    url     = module.cobranca_asaas.webhook_url
+output "lambda_worker_arn" {
+  description = "ARN da Lambda Worker"
+  value       = module.lambda_worker.function_arn
+}
+
+output "lambda_orchestrator_arn" {
+  description = "ARN da Lambda Orquestradora"
+  value       = module.lambda_orchestrator.function_arn
+}
+
+output "eventbridge_rule_arn" {
+  description = "ARN da regra do EventBridge"
+  value       = module.eventbridge.rule_arn
+}
+
+output "webhook_api_invoke_url" {
+  description = "URL de invoke da API Gateway para webhook"
+  value       = var.enable_webhook_api ? module.api_gateway_webhook.invoke_url : null
+}
+
+output "asaas_webhook_registration_payload" {
+  description = "Payload JSON para registrar webhook no Asaas"
+  value = var.enable_webhook_api ? {
+    url     = "${module.api_gateway_webhook.invoke_url}/asaas-webhook"
     event   = "PAYMENT_RECEIVED"
     name    = "Cobrança ${var.environment}"
     enabled = true
-  }
+  } : null
 }

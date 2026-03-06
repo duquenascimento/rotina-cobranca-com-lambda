@@ -31,9 +31,9 @@ output "webhook_api_invoke_url" {
 output "asaas_webhook_registration_payload" {
   description = "Payload JSON para registrar webhook no Asaas"
   value = var.enable_webhook_api ? {
-    url    = "${module.api_gateway_webhook.invoke_url}/asaas-webhook"
-    event  = "PAYMENT_RECEIVED"
-    name   = "Confirmação de Pagamento - ${var.environment}"
+    url     = "${module.api_gateway_webhook.invoke_url}/asaas-webhook"
+    event   = "PAYMENT_RECEIVED"
+    name    = "Cobrança ${var.environment}"
     enabled = true
   } : null
 }

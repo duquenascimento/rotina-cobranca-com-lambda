@@ -22,6 +22,17 @@ logs
 *.tfvars
 !environments/*/terraform.tfvars.example
 
+environments/dev/.terraform/*
+environments/dev/.terraform.tfvars
+environments/dev/.terraform.lock.hcl
+environments/dev/.terraform*
+environments/*/terraform.tfvars*
+
+environments/prod/.terraform/*
+environments/prod/.terraform.tfvars
+environments/prod/.terraform.lock.hcl
+environments/prod/.terraform*
+
 # Credenciais e secrets
 *.pem
 *.key

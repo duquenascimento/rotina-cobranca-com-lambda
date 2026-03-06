@@ -9,7 +9,7 @@ variable "filename" {
 }
 
 variable "handler" {
-  description = "Handler da função (ex: lambda_function.lambda_handler)"
+  description = "Handler da função"
   type        = string
 }
 
@@ -37,6 +37,11 @@ variable "reserved_concurrency" {
   default     = null
 }
 
+variable "environment" {
+  description = "Ambiente (dev, prod)"
+  type        = string
+}
+
 variable "environment_vars" {
   description = "Variáveis de ambiente"
   type        = map(string)
@@ -45,12 +50,6 @@ variable "environment_vars" {
 
 variable "sqs_queue_arns" {
   description = "ARNs de filas SQS que a Lambda pode consumir"
-  type        = list(string)
-  default     = []
-}
-
-variable "secret_arns" {
-  description = "ARNs de secrets que a Lambda pode acessar"
   type        = list(string)
   default     = []
 }
@@ -65,7 +64,6 @@ variable "additional_policy_statements" {
   default = []
 }
 
-# Trigger SQS (opcional)
 variable "event_source_arn" {
   description = "ARN da fonte de evento SQS para trigger automático"
   type        = string
@@ -89,3 +87,10 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_sqs_trigger" {
+  description = "Habilitar trigger SQS para esta Lambda (controla criação do recurso)"
+  type        = bool
+  default     = false
+}
+

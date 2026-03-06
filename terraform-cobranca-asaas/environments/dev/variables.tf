@@ -2,21 +2,30 @@
 # AWS & Projeto
 # ===========================
 variable "aws_region" {
-  description = "Região da AWS para ambiente dev"
+  description = "Região da AWS"
   type        = string
-  default     = "sa-east-1"
+}
+
+variable "aws_access_key" {
+  description = "AWS Access Key ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_secret_key" {
+  description = "AWS Secret Access Key"
+  type        = string
+  sensitive   = true
 }
 
 variable "project_name" {
   description = "Nome do projeto para tagging"
   type        = string
-  default     = "cobranca-asaas"
 }
 
 variable "environment" {
-  description = "Ambiente (fixo para dev)"
+  description = "Ambiente (dev, prod)"
   type        = string
-  default     = "dev"
 }
 
 # ===========================
@@ -31,7 +40,7 @@ variable "lambda_runtime" {
 variable "lambda_timeout_orchestrator" {
   description = "Timeout da Lambda Orquestradora (segundos)"
   type        = number
-  default     = 180
+  default     = 120
 }
 
 variable "lambda_timeout_worker" {
@@ -49,18 +58,23 @@ variable "lambda_timeout_webhook" {
 variable "lambda_memory_size" {
   description = "Memória das Lambdas (MB)"
   type        = number
-  default     = 256
+  default     = 512
 }
 
 variable "worker_reserved_concurrency" {
-  description = "Concorrência reservada da Worker (rate limiting Asaas)"
+  description = "Concorrência reservada da Worker"
   type        = number
-  default     = 2
+  default     = 10
 }
 
 # ===========================
 # SQS & Filas
 # ===========================
+variable "sqs_queue_name" {
+  description = "Nome da fila SQS principal"
+  type        = string
+}
+
 variable "sqs_visibility_timeout" {
   description = "Visibility timeout da SQS (segundos)"
   type        = number
@@ -68,24 +82,23 @@ variable "sqs_visibility_timeout" {
 }
 
 variable "sqs_max_receive_count" {
-  description = "Máximo de tentativas antes de enviar para DLQ"
+  description = "Máximo de retries antes de DLQ"
   type        = number
   default     = 3
 }
 
 variable "sqs_message_retention_days" {
-  description = "Tempo de retenção das mensagens na fila (dias)"
+  description = "Retenção de mensagens na fila (dias)"
   type        = number
-  default     = 7
+  default     = 14
 }
 
 # ===========================
 # EventBridge
 # ===========================
 variable "eventbridge_schedule" {
-  description = "Expressão cron para disparo da rotina"
+  description = "Expressão cron para disparo"
   type        = string
-  default     = "cron(0 9 * * ? *)"
 }
 
 variable "eventbridge_timezone" {
@@ -100,48 +113,53 @@ variable "eventbridge_timezone" {
 variable "database_type" {
   description = "Tipo de banco: postgresql ou dynamodb"
   type        = string
-  default     = "postgresql"
 }
 
-variable "database_connection_secret_arn" {
-  description = "ARN do Secrets Manager com string de conexão do DB"
+variable "database_host" {
+  description = "Host do banco de dados"
   type        = string
 }
 
+variable "database_port" {
+  description = "Porta do banco de dados"
+  type        = number
+}
+
+variable "database_name" {
+  description = "Nome do banco de dados"
+  type        = string
+}
+
+variable "database_user" {
+  description = "Usuário do banco de dados"
+  type        = string
+}
+
+variable "database_password" {
+  description = "Senha do banco de dados"
+  type        = string
+  sensitive   = true
+}
+
 # ===========================
-# Asaas & Secrets
+# Asaas
 # ===========================
 variable "asaas_api_base_url" {
   description = "URL base da API do Asaas"
   type        = string
-  default     = "https://sandbox.asaas.com/api/v3"
 }
 
-variable "asaas_token_secret_arn" {
-  description = "ARN do Secrets Manager com token da API Asaas"
+variable "asaas_token" {
+  description = "Token de acesso da API Asaas"
   type        = string
-}
-
-# ===========================
-# Alertas & Monitoramento
-# ===========================
-variable "enable_cloudwatch_alarms" {
-  description = "Habilitar alarmes do CloudWatch para DLQ"
-  type        = bool
-  default     = false
-}
-
-variable "sns_alert_topic_arn" {
-  description = "ARN do tópico SNS para alertas (opcional)"
-  type        = string
-  default     = null
+  sensitive   = true
 }
 
 # ===========================
 # API Gateway Webhook
 # ===========================
 variable "enable_webhook_api" {
-  description = "Habilitar API Gateway para receber webhook do Asaas"
+  description = "Habilitar API Gateway para webhook"
   type        = bool
   default     = true
 }
@@ -149,18 +167,20 @@ variable "enable_webhook_api" {
 variable "webhook_api_stage_name" {
   description = "Nome do stage da API Gateway"
   type        = string
-  default     = "dev"
+  default     = "prod"
 }
 
 # ===========================
-# Backend S3
+# Alertas
 # ===========================
-variable "terraform_backend_bucket" {
-  description = "Bucket S3 para estado do Terraform"
-  type        = string
+variable "enable_cloudwatch_alarms" {
+  description = "Habilitar alarmes CloudWatch"
+  type        = bool
+  default     = true
 }
 
-variable "terraform_backend_dynamodb_table" {
-  description = "Tabela DynamoDB para locking do estado"
+variable "sns_alert_topic_arn" {
+  description = "ARN do SNS para alertas"
   type        = string
+  default     = null
 }

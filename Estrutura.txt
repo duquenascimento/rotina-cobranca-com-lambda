@@ -26,13 +26,11 @@ terraform-cobranca-asaas/
 │   ├── dev/
 │   │   ├── main.tf
 │   │   ├── variables.tf
-│   │   ├── terraform.tfvars
-│   │   └── backend.tf
+│   │   └── terraform.tfvars
 │   └── prod/
 │       ├── main.tf
 │       ├── variables.tf
-│       ├── terraform.tfvars
-│       └── backend.tf
+│       └── terraform.tfvars
 ├── lambdas/
 │   ├── orchestrator/
 │   │   ├── lambda_function.py
