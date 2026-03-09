@@ -20,7 +20,7 @@ module "lambda_worker" {
   source = "../../modules/lambda-base"
   
   function_name        = "${var.project_name}-${var.environment}-worker"
-  filename             = "${path.module}/../../lambdas/worker/lambda_function.zip"
+  filename             = abspath("${path.root}/../../lambdas/worker/lambda_function.zip")
   handler              = "lambda_function.lambda_handler"
   runtime              = var.lambda_runtime
   timeout              = var.lambda_timeout_worker
@@ -42,9 +42,11 @@ module "lambda_worker" {
   
   sqs_queue_arns = [module.sqs.main_queue_arn]
   
-  event_source_arn        = module.sqs.main_queue_arn
+  event_source_arn     = module.sqs.main_queue_arn
   event_source_batch_size = 10
   event_source_enabled    = true
+  enable_sqs_trigger      = true 
+  
   
   tags = {
     Project     = var.project_name
@@ -59,7 +61,7 @@ module "lambda_orchestrator" {
   source = "../../modules/lambda-base"
   
   function_name = "${var.project_name}-${var.environment}-orchestrator"
-  filename      = "${path.module}/../../lambdas/orchestrator/lambda_function.zip"
+  filename      = abspath("${path.root}/../../lambdas/orchestrator/lambda_function.zip")
   handler       = "lambda_function.lambda_handler"
   runtime       = var.lambda_runtime
   timeout       = var.lambda_timeout_orchestrator
@@ -116,7 +118,7 @@ module "lambda_webhook" {
   source = "../../modules/lambda-base"
   
   function_name = "${var.project_name}-${var.environment}-webhook-handler"
-  filename      = "${path.module}/../../lambdas/webhook_handler/lambda_function.zip"
+  filename      = abspath("${path.root}/../../lambdas/webhook_handler/lambda_function.zip")
   handler       = "lambda_function.lambda_handler"
   runtime       = var.lambda_runtime
   timeout       = var.lambda_timeout_webhook

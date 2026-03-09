@@ -75,6 +75,7 @@ resource "aws_lambda_permission" "api_gateway" {
   action        = "lambda:InvokeFunction"
   function_name = var.webhook_function_name
   principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.webhook[0].execution_arn}/*/*"
   
-  source_arn = "${aws_apigatewayv2_api.webhook[0].execution_arn}/*/*"
+  depends_on = [aws_apigatewayv2_integration.webhook]
 }

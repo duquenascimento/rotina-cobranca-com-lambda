@@ -37,7 +37,7 @@ resource "aws_scheduler_schedule" "main" {
   name       = var.rule_name
   group_name = "default"
   
-  schedule_expression = "cron(${var.schedule_expression})"
+  schedule_expression = var.schedule_expression
   schedule_expression_timezone = var.timezone
   
   flexible_time_window {

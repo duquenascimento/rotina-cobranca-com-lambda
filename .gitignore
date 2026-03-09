@@ -21,6 +21,7 @@ logs
 *.tfstate.*
 *.tfvars
 !environments/*/terraform.tfvars.example
+!environments/prod/terraform.tfvars
 
 terraform-cobranca-asaas/environments/*/.terraform/*
 terraform-cobranca-asaas/environments/*/.terraform.tfvars

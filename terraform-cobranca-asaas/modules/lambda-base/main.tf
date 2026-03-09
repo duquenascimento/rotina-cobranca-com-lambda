@@ -88,14 +88,12 @@ resource "aws_lambda_function" "main" {
   memory_size      = var.memory_size
   publish          = true
   
-  # Reserved concurrency como atributo direto (não bloco dinâmico)
   reserved_concurrent_executions = var.reserved_concurrency
   
   environment {
     variables = var.environment_vars
   }
   
-  # Hash para re-deploy quando o código mudar
   source_code_hash = filebase64sha256(var.filename)
   
   tags = var.tags
@@ -121,16 +119,11 @@ resource "aws_cloudwatch_log_group" "lambda" {
 # SQS Event Source Mapping (Trigger)
 # ===========================
 resource "aws_lambda_event_source_mapping" "sqs_trigger" {
-  # ✅ count depende apenas de variável booleana (avaliável no plan)
   count = var.enable_sqs_trigger ? 1 : 0
   
   event_source_arn                   = var.event_source_arn
   function_name                      = aws_lambda_function.main.arn
-  enabled                           = var.event_source_enabled
-  batch_size                        = var.event_source_batch_size
+  enabled                            = var.event_source_enabled
+  batch_size                         = var.event_source_batch_size
   maximum_batching_window_in_seconds = 5
-  
-  # Configurações de retry
-  maximum_retry_attempts       = 2
-  bisect_batch_on_function_error = true
 }
