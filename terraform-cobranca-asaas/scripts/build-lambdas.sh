@@ -1,26 +1,44 @@
 #!/bin/bash
 set -e
 
-LAMBDA_DIR="lambdas"
-OUTPUT_DIR="dist"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-mkdir -p $OUTPUT_DIR
+echo "📦 Building Lambda packages..."
 
-for lambda_name in orchestrator worker webhook_handler; do
-    echo "Building $lambda_name..."
+for lambda in orchestrator worker webhook_handler; do
+  echo "  → Building $lambda..."
+  cd "$PROJECT_ROOT/lambdas/$lambda"
+  
+  # Remover build anterior
+  rm -rf python/
+  rm -f lambda_function.zip
+  
+  # Instalar dependências na pasta python/ (se existir requirements.txt)
+  if [ -f "requirements.txt" ]; then
+    echo "     Installing dependencies (Linux Lambda compatible)..."
     
-    cd $LAMBDA_DIR/$lambda_name
-    
-    # Instalar dependências Python
-    pip install -r requirements.txt -t python/lib/python3.11/site-packages
-    
-    # Criar ZIP
-    zip -r ../../../$OUTPUT_DIR/${lambda_name}.zip . -x "*.pyc" -x "__pycache__/*" -x "*.zip"
-    
-    # Limpar
-    rm -rf python
-    
-    cd ../..
+    # Forçar plataforma Linux manylinux (Lambda roda Linux, não Windows!)
+    pip install -r requirements.txt -t python/ \
+      --platform manylinux2014_x86_64 \
+      --python-version 3.11 \
+      --only-binary=:all: \
+      --upgrade
+  fi
+  
+  # Criar ZIP na MESMA pasta do código (não em dist/)
+  if [ -d "python" ]; then
+    zip -r lambda_function.zip lambda_function.py python/
+  else
+    zip -r lambda_function.zip lambda_function.py
+  fi
+  
+  # Verificar tamanho
+  SIZE=$(stat -c%s lambda_function.zip 2>/dev/null || stat -f%z lambda_function.zip)
+  echo "     ✓ $(ls -lh lambda_function.zip | awk '{print $5}')"
+  
+  # Limpar pasta python/ (não precisa no repo)
+  rm -rf python/
 done
 
-echo "✅ Lambdas built in $OUTPUT_DIR/"
+echo "✅ All Lambdas built!"
+echo "📍 ZIPs location: $PROJECT_ROOT/lambdas/*/lambda_function.zip"
