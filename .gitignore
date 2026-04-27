@@ -23,17 +23,16 @@ logs
 !environments/*/terraform.tfvars.example
 !environments/prod/terraform.tfvars
 
+
 terraform-cobranca-asaas/environments/*/.terraform/*
 terraform-cobranca-asaas/environments/*/.terraform.tfvars
 terraform-cobranca-asaas/environments/*/.terraform.lock.hcl
 terraform-cobranca-asaas/environments/*/.terraform*
 terraform-cobranca-asaas/environments/*/terraform.tfvars*
 
-terraform-cobranca-asaas/environments/*/.terraform/*
-terraform-cobranca-asaas/environments/*/.terraform.tfvars
-terraform-cobranca-asaas/environments/*/.terraform.lock.hcl
-terraform-cobranca-asaas/environments/*/.terraform*
-terraform-cobranca-asaas/environments/*/terraform.tfvars
+terraform-cobranca-asaas/environments/prod/.terraform/*
+
+terraform-cobranca-asaas/environments/prod/terraform.tfvars
 
 
 
