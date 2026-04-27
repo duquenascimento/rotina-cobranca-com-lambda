@@ -1,0 +1,69 @@
+node_modules
+dist
+dist.zip
+token.json
+*Zone.Identifier*
+debug.log
+yarn.lock
+logs
+.env
+.env.development
+.env.test
+.env.production
+
+# temp directory
+.temp
+.tmp
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!environments/*/terraform.tfvars.example
+!environments/prod/terraform.tfvars
+
+
+terraform-cobranca-asaas/environments/*/.terraform/*
+terraform-cobranca-asaas/environments/*/.terraform.tfvars
+terraform-cobranca-asaas/environments/*/.terraform.lock.hcl
+terraform-cobranca-asaas/environments/*/.terraform*
+terraform-cobranca-asaas/environments/*/terraform.tfvars*
+
+terraform-cobranca-asaas/environments/prod/.terraform/*
+
+terraform-cobranca-asaas/environments/prod/terraform.tfvars
+
+
+
+
+# Credenciais e secrets
+*.pem
+*.key
+*.secret
+.env
+*.tfvars.backup
+
+# Lambdas build
+lambdas/*/python/
+lambdas/*/*.zip
+dist/
+
+# IDE e sistema
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Binários de provedores
+*terraform-provider-*.exe
+*terraform-provider-*_x*.exe
+*terraform-provider-*_x*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage

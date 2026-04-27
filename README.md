@@ -37,7 +37,7 @@ Antes de começar, certifique-se de que você tem:
 3. **Configure as variáveis de ambiente:**
    Crie um arquivo `.env` com as seguintes variáveis:
    ```
-   AWS_REGION=us-east-1
+   AWS_REGION=sa-east-1
    DYNAMODB_TABLE=cobrancas
    SNS_TOPIC_ARN=arn:aws:sns:region:account:topic
    ```
