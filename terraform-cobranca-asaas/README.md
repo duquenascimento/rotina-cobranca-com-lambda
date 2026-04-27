@@ -45,6 +45,7 @@ echo "✅ All Lambdas built!"
 python -m pip install --upgrade pip
 
 # Depois rodar o build novamente
+no diretório terraform-cobranca-asaas
 ./scripts/build-lambdas.sh
 
 
@@ -60,5 +61,11 @@ cd environments/prod
 terraform init
 terraform plan -var-file=terraform.tfvars
 terraform apply -var-file=terraform.tfvars
+
+
+# Fluxo na lambda's
+
+1-A lambda 1 - Orquestrador faz uma query e envia ls registros com o chargeid retornado via fila sqs para a lambda 2.
+2-A lambda 2 - Worker aciona a rota de captura para executar a cobrança con siderando "chargeId" => "txId" da tabela "credit_card_charge" => ID da cobrança no ASAAS
 
 
